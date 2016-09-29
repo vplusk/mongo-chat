@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+	<meta charset="UTF-8">
+	<title>Socket.io</title>
+</head>
+<body>
+	<div>
+		<input type="text" placeholder="Your name" id="nameInput">
+		<input type="button" value="OK" id="nameButton">
+	</div>
+	<ul id="messages"></ul>
+	<div>
+		<textarea name="" id="text" cols="30" rows="10"></textarea>
+		<input type="button" value="Send" id="textSubmit">
+	</div>
+</body>
+<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script>
+	(function() {
+		var nameButton = $('#nameButton'),
+			nameInput = $('#nameInput'),
+			messages = $('#messages'),
+			text = $('#text'),
+			textSubmit = $('#textSubmit');
+
+		var userName = 'User1';
+		var socket = io.connect();
+
+		nameButton.click(function() {
+			userName = nameInput.val() || 'User1';
+		});
+
+		textSubmit.click(function() {
+			var data = {
+				name: userName,
+				text: text.val()
+			};
+
+			text.val('');
+			// Sending chat message to database
+			socket.emit('chat message', data);
+			
+		});
+
+		// receiving chat history from database
+		socket.on('chat history', function(msg) {
+			//console.log(msg.message);
+			for (var i in msg) {
+				if(msg.hasOwnProperty(i)) {
+					// displaying data in form of ul-list
+					messages.append($('<li>').text(msg[i].name + ': ' + msg[i].message));
+				}
+			}
+		});
+
+		// Updating chat history in real-time
+		socket.on('chat message', function(msg) {
+			messages.append($('<li>').text(msg.name + ': ' + msg.message));
+		});
+
+	})();
+</script>
+</html>
